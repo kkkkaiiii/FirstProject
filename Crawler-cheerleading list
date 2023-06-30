@@ -1,0 +1,84 @@
+import urllib.request as req
+import ssl
+ssl._create_default_https_context=ssl._create_unverified_context
+url="https://twbsball.dils.tku.edu.tw/wiki/index.php/%E5%95%A6%E5%95%A6%E9%9A%8A"
+#建立一個Request物件，附加Request Headers 的資訊(讓網站以為我們是人)
+request=req.Request(url,headers={
+    "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+})
+
+with req.urlopen(request) as response:
+    data= response.read().decode("utf-8")
+
+import pandas as pd
+
+import bs4
+
+root=bs4.BeautifulSoup(data,"html.parser")  #讓beautifulsoup協助我們把data用html做解析
+#了解目標在原始碼中的特色(標籤)
+
+players=root.find_all("table",class_="mover DGPK-rows")
+team_list=[]
+player_list=[]
+for idx,i in enumerate(players):
+    if idx==2:
+        for jdx,j in enumerate(i):
+            if jdx==1:
+                continue
+            for kdx,k in enumerate(j):
+                if kdx==1:
+                    if k.a is not None:
+                        if k.a.string=="中華棒協":
+                            continue
+                        team = k.a.string
+                        team_list.append(team)
+                if kdx==5:
+                    for ldx,l in enumerate(k):
+                        if ldx%2 == 0:
+                            if l[0:2]=="10":
+                                continue
+                            a = l.split("、")
+                            player_list.append([ldx,a])
+
+team0=[]
+team1=[]
+team2=[]
+team3=[]
+team4=[]
+for idx,i in enumerate(player_list):
+    #print(idx,i)
+    if idx==0 or idx==1:
+        for j in i[1]:
+            team0.append(j)
+    elif idx==2 or idx==3 or idx==4:
+        for j in i[1]:
+            team1.append(j)
+    elif idx==5 or idx==6:
+        for j in i[1]:
+            team2.append(j)
+    elif idx==7 or idx==8:
+        for j in i[1]:
+            team3.append(j)
+    else:
+        for j in i[1]:
+            team4.append(j)
+print(team0)
+print(team1)
+print(team2)
+print(team3)
+print(team4)
+for idx,i in enumerate(team_list):
+    teamname =[]
+    teamname.append(team_list[idx])
+    if idx==0:
+        store=pd.DataFrame(columns=teamname,data=team0)
+    elif idx==1:
+        store=pd.DataFrame(columns=teamname,data=team1)
+    elif idx==2:
+        store=pd.DataFrame(columns=teamname,data=team2)
+    elif idx==3:
+        store=pd.DataFrame(columns=teamname,data=team3)
+    elif idx==4:
+        store=pd.DataFrame(columns=teamname,data=team4)
+    outname = team_list[idx]+".csv"
+    store.to_csv(outname,encoding="utf-8")
