@@ -1,0 +1,62 @@
+import urllib.request as req
+import ssl
+ssl._create_default_https_context=ssl._create_unverified_context
+url="https://www.cpbl.com.tw/player"
+#建立一個Request物件，附加Request Headers 的資訊(讓網站以為我們是人)
+request=req.Request(url,headers={
+    "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
+})
+
+with req.urlopen(request) as response:
+    data= response.read().decode("utf-8")
+
+import pandas as pd
+
+import bs4
+root=bs4.BeautifulSoup(data,"html.parser")
+
+players=root.find_all("div",class_="PlayersList")
+list=[]
+list1=[]
+list2=[]
+list3=[]
+list4=[]
+list5=[]
+for idx,player in enumerate(players):
+    player_list=[]
+    first_dd = player.dd
+    for dd in first_dd.find_next_siblings("dd"):
+        if dd.a is not None:
+            player_list.append(dd.a.string)
+    
+    if idx == 0:
+        list.append(("中信兄弟",player_list))
+        store=pd.DataFrame(columns=["中信兄弟"],data=player_list)
+        store.to_csv("Brothers.csv",encoding="utf-8",index=False)
+    elif idx ==1:
+        list1.append(("台鋼雄鷹",player_list))
+        store=pd.DataFrame(columns=["台鋼雄鷹"],data=player_list)
+        store.to_csv("Eagles.csv",encoding="utf-8")
+    elif idx ==2:
+        list2.append(("味全龍",player_list))
+        store=pd.DataFrame(columns=["味全龍"],data=player_list)
+        store.to_csv("Dragons.csv",encoding="utf-8")
+    elif idx ==3:
+        list3.append(("統一7-ELEVEn獅",player_list))
+        store=pd.DataFrame(columns=["統一7-ELEVEn獅"],data=player_list)
+        store.to_csv("7-ELEVEn.csv",encoding="utf-8")
+    elif idx ==4:
+        list4.append(("富邦悍將",player_list))
+        store=pd.DataFrame(columns=["富邦悍將"],data=player_list)
+        store.to_csv("Braves.csv",encoding="utf-8")
+    elif idx ==5:
+        list5.append(("樂天桃猿",player_list))
+        store=pd.DataFrame(columns=["樂天桃猿"],data=player_list)
+        store.to_csv("Monkeys.csv",encoding="utf-8")
+print(list)
+print(list1)
+print(list2)
+print(list3)
+print(list4)
+print(list5)
+   
